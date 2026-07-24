@@ -50,5 +50,69 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   <body>
     <a class="skip t-label" href="#main">{t.skip}</a>
     <slot />
+
+    <script is:inline>
+      /* Vanishing spray. The cursor image is CSS; this only lays the droplets
+         it leaves on the grass and lets them evaporate. No rAF loop: pointermove
+         is already coalesced to one event per frame, so an idle page costs zero. */
+      (function () {
+        if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        var layer = document.createElement('div');
+        layer.className = 'spray';
+        layer.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(layer);
+
+        var lx = 0,
+          ly = 0,
+          onGrass = false;
+
+        addEventListener(
+          'pointermove',
+          function (e) {
+            var el = e.target;
+            if (
+              e.pointerType !== 'mouse' ||
+              !el.closest ||
+              !el.closest('.pitch') ||
+              el.closest('.sheet, .board')
+            ) {
+              onGrass = false;
+              return;
+            }
+
+            var dx = e.clientX - lx,
+              dy = e.clientY - ly;
+            /* one droplet per ~18px travelled: a nozzle, not a firehose */
+            if (onGrass && dx * dx + dy * dy < 324) return;
+            lx = e.clientX;
+            ly = e.clientY;
+            onGrass = true;
+
+            var s = 4 + Math.random() * 5;
+            var d = document.createElement('i');
+            d.style.cssText =
+              'left:' +
+              (e.clientX + (Math.random() - 0.5) * 12 - s / 2) +
+              'px;top:' +
+              (e.clientY + (Math.random() - 0.5) * 12 - s / 2) +
+              'px;width:' +
+              s +
+              'px;height:' +
+              s +
+              'px';
+            d.addEventListener('animationend', function () {
+              d.remove();
+            });
+            layer.appendChild(d);
+
+            /* a backgrounded tab never fires animationend — cap the layer */
+            if (layer.childElementCount > 120) layer.firstElementChild.remove();
+          },
+          { passive: true }
+        );
+      })();
+    </script>
   </body>
 </html>
