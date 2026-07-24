@@ -1,0 +1,239 @@
+---
+/*
+ DIRECTION CONTRACT — Matchday
+
+ THESIS: A Spanish club's matchday sheet, because a squad list is the most
+ scannable document in sport and a recruiter has sixty seconds. Refuses the
+ dev-portfolio default (near-black + neon + mono) and its predictable opposite
+ (cream paper + serif + generous whitespace).
+
+ OWN-WORLD: Three materials, one job each. PITCH — drenched saturated green,
+ mown stripes, chalk SVG line markings. SHEET — white printed paper on the
+ grass, the only shadow in the system. BOARD — near-black with amber LEDs.
+ Zero radius; the only curves are the centre circle and the penalty arc. One
+ typeface, Archivo, worked across its width axis from 75% to 118%.
+
+ STORY: Visitor sees a name and number, learns the range (full-stack / CUDA /
+ deep learning) in one line, scans four numbered projects with real repos,
+ reads the season record, and emails from the board.
+
+ FIRST VIEWPORT: Two columns. Left — name, role, thesis line, then the black
+ board carrying availability, EN/ES, and the amber contact button. Right —
+ PARRA over a chalk "05" at 26rem, bleeding toward the edge. Chalk markings
+ draw themselves on once behind it all.
+
+ FORM: Matchday, candidate 5 of 7 on the ordered grounded list, seed a2cec331.
+ The dealt staging (portal counterparts) was declined on task grounds — element
+ hand-offs between portal frames fight a sixty-second scan. Committed staging is
+ the programme's own sequence: pitch → sheet → pitch → sheet → board.
+*/
+import Markings from './Markings.astro';
+import { facts, projects, range, season, ui, type Lang } from '../data/content';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = ui[lang];
+const mailto = `mailto:${facts.email}`;
+---
+
+<!-- the programme's spine: true facts only, at ticket-stub density -->
+<ul class="spine t-label">
+  {t.spine.map((s) => <li>{s}</li>)}
+</ul>
+
+<header class="masthead pitch">
+  <div class="wrap">
+    <a class="crest t-label" href={lang === 'en' ? '/' : '/es/'}>
+      <span>{facts.number}</span>
+      <em>{facts.name}</em>
+    </a>
+    <nav class="nav t-label" aria-label={t.navLabel}>
+      <a href="#squad">{t.nav.squad}</a>
+      <a href="#season">{t.nav.season}</a>
+      <a href="#profile">{t.nav.profile}</a>
+      <a href="#contact">{t.nav.contact}</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <!-- ── Hero: the shirt back ─────────────────────────────── -->
+  <section class="hero pitch">
+    <Markings />
+    <div class="wrap">
+      <div>
+        <h1 class="hero-name">{facts.name}</h1>
+        <p class="hero-role">{t.role}</p>
+        <p class="hero-thesis">{t.thesis}</p>
+
+        <div class="board">
+          <p class="board-status t-label">
+            <span class="led"></span>
+            {t.status}
+          </p>
+          <div class="langs t-label" role="group" aria-label={t.langLabel}>
+            <a href="/" hreflang="en" aria-current={lang === 'en' ? 'true' : undefined}>EN</a>
+            <a href="/es/" hreflang="es" aria-current={lang === 'es' ? 'true' : undefined}>ES</a>
+          </div>
+          <a class="btn board-cta t-label" href={mailto}>{t.cta}</a>
+        </div>
+      </div>
+
+      <p class="kit" aria-hidden="true">
+        <span class="kit-name">{facts.surname}</span>
+        <span class="kit-no t-kit">{facts.number}</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- ── The range, painted on the pitch ──────────────────── -->
+  <section class="pitch band" aria-label={t.rangeLabel}>
+    <div class="wrap">
+      <ul class="range">
+        {
+          range.map((r) => (
+            <li>
+              <span class="range-no">{String(r.count).padStart(2, '0')}</span>
+              <span class="range-body">
+                <span class="range-name">{r[lang]}</span>
+                <span class="range-unit t-label">
+                  {r.count === 1 ? t.projectWord : t.projectsWord}
+                </span>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── Squad: the team sheet ────────────────────────────── -->
+  <section class="pitch sheet-wrap" id="squad">
+    <div class="wrap">
+      <div class="sheet">
+        <div class="sec-head">
+          <h2 class="t-display">{t.squadTitle}</h2>
+          <p class="sec-sub t-body">{t.squadSub}</p>
+        </div>
+
+        <ol class="squad">
+          {
+            projects.map((p) => {
+              const c = p[lang];
+              return (
+                <li class="row">
+                  <span class="row-no" aria-hidden="true">{p.no}</span>
+                  <div class="row-body">
+                    <p class="row-pos t-label">{c.position}</p>
+                    <h3 class="t-sheet">{c.title}</h3>
+                    <p class="row-line t-body">{c.line}</p>
+                    <ul class="chips t-label">
+                      {p.stack.map((s) => <li>{s}</li>)}
+                    </ul>
+                    {p.repo ? (
+                      <a class="repo t-label" href={p.repo} rel="noopener noreferrer" target="_blank">
+                        {t.viewRepo} <span aria-hidden="true">↗</span>
+                      </a>
+                    ) : (
+                      <p class="row-pos t-label">{t.noRepo}</p>
+                    )}
+                  </div>
+                </li>
+              );
+            })
+          }
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Season: the record, back on the grass ────────────── -->
+  <section class="pitch section" id="season">
+    <Markings detail={false} />
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 class="t-display">{t.seasonTitle}</h2>
+        <p class="sec-sub t-body">{t.seasonSub}</p>
+      </div>
+
+      <ol class="season">
+        {
+          season.map((s) => {
+            const c = s[lang];
+            return (
+              <li class="srow">
+                <p class="srow-when t-label">
+                  {s.current && <span class="led"></span>}
+                  {c.when}
+                </p>
+                <div>
+                  <h3 class="srow-role">
+                    {c.role}
+                    {s.current && facts.internshipCompany && (
+                      <span class="srow-co"> · {facts.internshipCompany}</span>
+                    )}
+                  </h3>
+                  <p class="srow-line t-body">{c.line}</p>
+                </div>
+              </li>
+            );
+          })
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- ── Profile ──────────────────────────────────────────── -->
+  <section class="pitch sheet-wrap" id="profile">
+    <div class="wrap">
+      <div class="sheet">
+        <div class="profile-grid">
+          <div class="profile-prose">
+            <h2 class="t-display">{t.profileTitle}</h2>
+            <p class="t-body">{t.profileLead}</p>
+            <p class="t-body">{t.profileTeach}</p>
+          </div>
+          <div class="offpitch">
+            <h3 class="t-label">{t.offPitch}</h3>
+            <ul>
+              {t.facts.map((f) => <li>{f}</li>)}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ── Contact: the board ─────────────────────────────────── -->
+<footer class="contact" id="contact">
+  <div class="wrap">
+    <h2 class="t-display">{t.contactTitle}</h2>
+    <p class="contact-line t-body">{t.contactLine}</p>
+
+    <div class="contact-actions">
+      <a class="btn t-label" href={mailto}>{t.cta}</a>
+      <a class="btn-ghost t-label" href={facts.github} rel="me noopener noreferrer" target="_blank">GitHub</a>
+      <a class="btn-ghost t-label" href={facts.linkedin} rel="me noopener noreferrer" target="_blank">LinkedIn</a>
+      <a class="btn-ghost t-label" href={facts.instagram} rel="me noopener noreferrer" target="_blank">Instagram</a>
+    </div>
+
+    <div class="board">
+      <p class="board-status t-label">
+        <span class="led"></span>
+        {t.status}
+      </p>
+      <div class="langs t-label" role="group" aria-label={t.langLabel}>
+        <a href="/" hreflang="en" aria-current={lang === 'en' ? 'true' : undefined}>EN</a>
+        <a href="/es/" hreflang="es" aria-current={lang === 'es' ? 'true' : undefined}>ES</a>
+      </div>
+    </div>
+
+    <div class="colophon t-label">
+      <span>{facts.name}</span>
+      <span>{t.footer}</span>
+    </div>
+  </div>
+</footer>

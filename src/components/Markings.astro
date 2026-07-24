@@ -1,0 +1,33 @@
+---
+/* Real pitch geometry, drawn as chalk. pathLength="1" lets the draw-on
+   animation use an exact dashoffset regardless of each shape's true length.
+   The penalty area is detail: it drops out below 720px so the markings stay
+   legible rather than becoming noise behind the text. */
+interface Props {
+  detail?: boolean;
+}
+const { detail = true } = Astro.props;
+---
+
+<svg
+  class="markings"
+  viewBox="0 0 1600 1000"
+  preserveAspectRatio="xMidYMid slice"
+  aria-hidden="true"
+  focusable="false"
+>
+  <rect class="line" x="40" y="40" width="1520" height="920" pathLength="1" />
+  <line class="line" x1="800" y1="40" x2="800" y2="960" pathLength="1" />
+  <circle class="line" cx="800" cy="500" r="140" pathLength="1" />
+  {
+    detail && (
+      <>
+        <rect class="line detail" x="40" y="250" width="290" height="500" pathLength="1" />
+        <rect class="line detail" x="40" y="390" width="100" height="220" pathLength="1" />
+        <path class="line detail" d="M 330 407.4 A 140 140 0 0 1 330 592.6" pathLength="1" />
+      </>
+    )
+  }
+  <circle class="spot" cx="800" cy="500" r="7" />
+  {detail && <circle class="spot detail" cx="225" cy="500" r="7" />}
+</svg>

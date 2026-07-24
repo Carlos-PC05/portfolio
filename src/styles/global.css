@@ -1,0 +1,862 @@
+/* ─────────────────────────────────────────────────────────────
+   MATCHDAY — see DESIGN.md
+   Three materials: PITCH (green), SHEET (paper), BOARD (amber LED).
+   Zero radius anywhere. One shadow token. No gray, ever.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --pitch: #0a5c34;
+  /* the mown stripe runs DARKER than the base, so every chalk and chalk-dim
+     value gains contrast on it instead of losing it */
+  --pitch-deep: #074526;
+  --chalk: #f4f6f1;
+  --chalk-dim: #b8d4c2;
+  --board-black: #0b0f0c;
+  --board-amber: #ffb020;
+  --ink: #0b0f0c;
+  --ink-soft: #4a5b50;
+  --rule: #c9d4cb;
+
+  --space-hair: 4px;
+  --space-tight: 8px;
+  --space-snug: 16px;
+  --space-base: 24px;
+  --space-loose: 48px;
+  --space-section: clamp(72px, 12vh, 144px);
+
+  --container: min(1240px, 92vw);
+  --sheet-lift: 0 18px 40px -12px rgba(4, 30, 16, 0.45);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --font: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+
+  /* the full type ramp — every step has one job, see DESIGN.md */
+  --fs-kit: clamp(7rem, 32vw, 26rem);
+  --fs-kit-name: clamp(1.8rem, 6.5vw, 4.6rem);
+  --fs-display: clamp(2.25rem, 6vw, 4.75rem);
+  --fs-headline: clamp(1.5rem, 3.4vw, 2.5rem);
+  --fs-numeral: clamp(2.5rem, 6vw, 4rem);
+  --fs-sheet: clamp(1.35rem, 2.6vw, 2rem);
+  --fs-lead: clamp(1.1rem, 1.9vw, 1.4rem);
+  --fs-body: 1rem;
+  --fs-label: 0.75rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  border-radius: 0; /* The Only Curve Rule */
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* clip, not hidden: the cropped kit numeral must not create a scrollbar */
+  overflow-x: clip;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  font-family: var(--font);
+  font-weight: 400;
+  font-stretch: 100%;
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  color: var(--chalk);
+  background: var(--pitch);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--chalk);
+  outline-offset: 3px;
+}
+
+.board :focus-visible,
+.sheet :focus-visible {
+  outline-color: var(--board-amber);
+}
+
+.sheet :focus-visible {
+  outline-color: var(--pitch);
+}
+
+/* ── Type roles ───────────────────────────────────────────── */
+
+.t-kit {
+  font-weight: 900;
+  font-stretch: 118%;
+  font-size: var(--fs-kit);
+  line-height: 0.78;
+  letter-spacing: -0.045em;
+}
+
+.t-display {
+  font-weight: 800;
+  font-stretch: 110%;
+  font-size: var(--fs-display);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.t-sheet {
+  font-weight: 600;
+  font-stretch: 85%;
+  font-size: var(--fs-sheet);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.t-body {
+  font-weight: 400;
+  font-stretch: 100%;
+  line-height: 1.6;
+  max-width: 68ch;
+}
+
+.t-label {
+  font-weight: 700;
+  font-stretch: 75%;
+  font-size: var(--fs-label);
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ── Utility ──────────────────────────────────────────────── */
+
+.wrap {
+  width: var(--container);
+  margin-inline: auto;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip {
+  position: absolute;
+  left: var(--space-base);
+  top: -100px;
+  z-index: 99;
+  background: var(--board-amber);
+  color: var(--board-black);
+  padding: 14px 22px;
+  transition: top 160ms var(--ease);
+}
+
+.skip:focus {
+  top: var(--space-base);
+}
+
+/* ── PITCH ────────────────────────────────────────────────── */
+
+.pitch {
+  position: relative;
+  background-color: var(--pitch);
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--pitch) 0 8.333%,
+    var(--pitch-deep) 8.333% 16.666%
+  );
+  isolation: isolate;
+}
+
+.pitch > .wrap {
+  position: relative;
+  z-index: 1;
+}
+
+.markings {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.markings .line {
+  fill: none;
+  stroke: rgba(244, 246, 241, 0.5);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.markings .spot {
+  fill: rgba(244, 246, 241, 0.5);
+  stroke: none;
+}
+
+/* the one authored motion moment: the chalk gets drawn on */
+@media (prefers-reduced-motion: no-preference) {
+  .markings .line {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: chalk 1400ms var(--ease) forwards;
+  }
+  .markings .line:nth-child(1) { animation-delay: 120ms; }
+  .markings .line:nth-child(2) { animation-delay: 300ms; }
+  .markings .line:nth-child(3) { animation-delay: 420ms; }
+  .markings .line:nth-child(4) { animation-delay: 540ms; }
+  .markings .line:nth-child(5) { animation-delay: 620ms; }
+  .markings .line:nth-child(6) { animation-delay: 700ms; }
+  .markings .spot {
+    opacity: 0;
+    animation: spot 400ms var(--ease) 1100ms forwards;
+  }
+}
+
+@keyframes chalk {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes spot {
+  to { opacity: 1; }
+}
+
+/* ── Spine: the programme's masthead strip ────────────────── */
+
+.spine {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  list-style: none;
+  background: var(--board-black);
+  color: var(--chalk-dim);
+  padding: 11px var(--space-snug);
+}
+
+.spine li {
+  padding-inline: clamp(10px, 2vw, 18px);
+}
+
+.spine li + li {
+  border-left: 1px solid rgba(184, 212, 194, 0.35);
+}
+
+/* ── Range band: breadth, shown ───────────────────────────── */
+
+.band {
+  padding-block: clamp(40px, 6vh, 76px);
+  border-block: 2px solid rgba(244, 246, 241, 0.35);
+}
+
+.range {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-base);
+}
+
+@media (min-width: 700px) {
+  .range {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+  }
+
+  .range li + li {
+    border-left: 1px solid rgba(244, 246, 241, 0.3);
+    padding-left: clamp(20px, 3vw, 44px);
+  }
+}
+
+.range li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-snug);
+}
+
+.range-no {
+  font-weight: 900;
+  font-stretch: 118%;
+  font-size: var(--fs-numeral);
+  line-height: 0.82;
+  letter-spacing: -0.04em;
+  color: var(--chalk);
+}
+
+.range-body {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.range-name {
+  font-weight: 700;
+  font-stretch: 88%;
+  font-size: var(--fs-lead);
+  line-height: 1.1;
+}
+
+.range-unit {
+  color: var(--chalk-dim);
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+
+.masthead {
+  position: relative;
+  z-index: 2;
+  padding-block: var(--space-base);
+}
+
+.masthead .wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-base);
+  flex-wrap: wrap;
+}
+
+.crest {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--chalk);
+}
+
+.crest span {
+  border: 2px solid var(--chalk);
+  padding: 5px 7px;
+  font-weight: 900;
+  font-stretch: 118%;
+  font-size: var(--fs-label);
+  line-height: 1;
+}
+
+.crest em {
+  font-style: normal;
+}
+
+/* the hero states the name immediately below; on a phone the crest only needs
+   the number, and the masthead stops eating 128px of the first viewport */
+@media (max-width: 559px) {
+  .crest em {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+.nav {
+  display: flex;
+  gap: clamp(14px, 2.4vw, 32px);
+  flex-wrap: wrap;
+}
+
+.nav a {
+  color: var(--chalk);
+  text-decoration: none;
+  padding-block: 10px 6px;
+  border-bottom: 2px solid transparent;
+  transition: border-color 140ms var(--ease), color 140ms var(--ease);
+}
+
+.nav a:hover {
+  border-bottom-color: var(--chalk);
+}
+
+/* ── Hero ─────────────────────────────────────────────────── */
+
+.hero {
+  min-height: calc(100svh - 84px);
+  display: flex;
+  align-items: center;
+  padding-block: var(--space-loose) var(--space-section);
+  /* the shoulders crop the number */
+  overflow: clip;
+}
+
+.hero .wrap {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .hero .wrap {
+    grid-template-columns: 1.05fr 1fr;
+  }
+}
+
+/* No order swap on mobile: the contract promises name, role, thesis and the
+   board first, and PRODUCT assumes phone traffic. The number closes the hero
+   rather than burying the CTA below the fold. */
+.kit {
+  color: var(--chalk);
+}
+
+@media (min-width: 900px) {
+  .kit {
+    text-align: right;
+    /* a number on a shirt back is cropped by the shoulders */
+    margin-right: clamp(-64px, -3vw, 0px);
+  }
+}
+
+.kit-name {
+  display: block;
+  font-weight: 900;
+  font-stretch: 118%;
+  font-size: var(--fs-kit-name);
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: clamp(4px, 1vw, 12px);
+}
+
+.kit-no {
+  display: block;
+}
+
+.hero-name {
+  font-weight: 800;
+  font-stretch: 105%;
+  font-size: var(--fs-headline);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-snug);
+}
+
+/* a full sentence, so it stays sentence case — tracked caps at Spanish
+   length is a label pretending to be prose */
+.hero-role {
+  font-size: var(--fs-body);
+  font-stretch: 90%;
+  color: var(--chalk-dim);
+  max-width: 46ch;
+  margin-bottom: var(--space-base);
+}
+
+.hero-thesis {
+  font-weight: 600;
+  font-stretch: 92%;
+  font-size: var(--fs-lead);
+  line-height: 1.35;
+  max-width: 34ch;
+  margin-bottom: var(--space-loose);
+  text-wrap: pretty;
+}
+
+/* ── BOARD ────────────────────────────────────────────────── */
+
+.board {
+  background: var(--board-black);
+  color: var(--board-amber);
+  padding: var(--space-snug) var(--space-base);
+  display: flex;
+  align-items: center;
+  gap: var(--space-base);
+  flex-wrap: wrap;
+  max-width: 560px;
+}
+
+.board-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+}
+
+.led {
+  width: 11px;
+  height: 11px;
+  background: var(--board-amber);
+  flex: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .led {
+    animation: pulse 2400ms ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.28; }
+}
+
+.board-cta {
+  flex: 1 1 100%;
+  text-align: center;
+}
+
+@media (max-width: 719px) {
+  .markings .detail {
+    display: none;
+  }
+}
+
+.langs {
+  display: flex;
+  border: 2px solid var(--board-amber);
+  flex: none;
+}
+
+.langs a {
+  padding: 8px 12px;
+  text-decoration: none;
+  color: var(--board-amber);
+  transition: background 140ms var(--ease), color 140ms var(--ease);
+}
+
+.langs a[aria-current='true'] {
+  background: var(--board-amber);
+  color: var(--board-black);
+}
+
+.langs a:not([aria-current='true']):hover {
+  background: rgba(255, 176, 32, 0.2);
+}
+
+.btn {
+  display: inline-block;
+  background: var(--board-amber);
+  color: var(--board-black);
+  padding: 20px 40px;
+  text-decoration: none;
+  border: none;
+  transition: background 140ms var(--ease), color 140ms var(--ease);
+}
+
+.btn:hover {
+  background: var(--chalk);
+}
+
+.btn-ghost {
+  display: inline-block;
+  border: 2px solid var(--chalk);
+  color: var(--chalk);
+  background: transparent;
+  padding: 18px 38px;
+  text-decoration: none;
+  transition: background 140ms var(--ease), color 140ms var(--ease);
+}
+
+.btn-ghost:hover {
+  background: var(--chalk);
+  color: var(--pitch);
+}
+
+.board .btn-ghost {
+  border-color: var(--board-amber);
+  color: var(--board-amber);
+}
+
+.board .btn-ghost:hover {
+  background: var(--board-amber);
+  color: var(--board-black);
+}
+
+/* ── Section headings ─────────────────────────────────────── */
+
+.section {
+  padding-block: var(--space-section);
+}
+
+.sec-head {
+  margin-bottom: var(--space-loose);
+}
+
+.sec-head .t-label {
+  display: block;
+  margin-bottom: var(--space-snug);
+  color: var(--chalk-dim);
+}
+
+.sheet .sec-head .t-label {
+  color: var(--ink-soft);
+}
+
+.sec-sub {
+  margin-top: var(--space-snug);
+  color: var(--chalk-dim);
+  max-width: 52ch;
+}
+
+.sheet .sec-sub {
+  color: var(--ink-soft);
+}
+
+/* ── SHEET ────────────────────────────────────────────────── */
+
+.sheet-wrap {
+  padding-block: var(--space-section);
+}
+
+.sheet {
+  background: var(--chalk);
+  color: var(--ink);
+  box-shadow: var(--sheet-lift); /* The One Shadow Rule */
+  padding: clamp(24px, 5vw, 64px);
+}
+
+.sheet .t-display {
+  color: var(--ink);
+}
+
+/* ── Squad table ──────────────────────────────────────────── */
+
+.squad {
+  border-top: 1px solid var(--rule);
+}
+
+/* Below 560px the number stops being a column and sits above the title,
+   so a long project name gets the full measure instead of ~300px. */
+.row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-tight);
+  padding-block: clamp(24px, 3.5vw, 38px);
+  border-bottom: 1px solid var(--rule);
+  transition: background 160ms var(--ease);
+}
+
+@media (min-width: 560px) {
+  .row {
+    grid-template-columns: auto 1fr;
+    gap: var(--space-snug) clamp(16px, 3vw, 40px);
+  }
+}
+
+.row:hover {
+  background: rgba(10, 92, 52, 0.04);
+}
+
+.row-no {
+  align-self: start;
+  font-weight: 900;
+  font-stretch: 118%;
+  font-size: var(--fs-numeral);
+  line-height: 0.82;
+  letter-spacing: -0.04em;
+  color: var(--pitch);
+  transition: transform 160ms var(--ease);
+}
+
+.row:hover .row-no {
+  transform: translateX(4px);
+}
+
+.row-body > * + * {
+  margin-top: var(--space-snug);
+}
+
+.row-pos {
+  color: var(--ink-soft);
+}
+
+.row-line {
+  color: var(--ink-soft);
+  max-width: 62ch;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-tight);
+  list-style: none;
+}
+
+.chips li {
+  border: 1px solid var(--ink-soft);
+  color: var(--ink-soft);
+  padding: 6px 10px;
+}
+
+.repo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--pitch);
+  text-decoration: none;
+  border-bottom: 2px solid var(--pitch);
+  padding: 9px 10px;
+  margin-left: -10px;
+  transition: background 140ms var(--ease), color 140ms var(--ease);
+}
+
+.repo:hover {
+  background: var(--pitch);
+  color: var(--chalk);
+}
+
+/* ── Season list (on pitch) ───────────────────────────────── */
+
+.season {
+  border-top: 2px solid rgba(244, 246, 241, 0.35);
+}
+
+.srow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-tight) clamp(16px, 4vw, 48px);
+  padding-block: clamp(22px, 3vw, 34px);
+  border-bottom: 1px solid rgba(244, 246, 241, 0.28);
+}
+
+@media (min-width: 760px) {
+  .srow {
+    grid-template-columns: 180px 1fr;
+    align-items: baseline;
+  }
+}
+
+.srow-when {
+  color: var(--chalk-dim);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.srow-when .led {
+  width: 9px;
+  height: 9px;
+}
+
+.srow-role {
+  font-weight: 700;
+  font-stretch: 90%;
+  font-size: var(--fs-lead);
+  line-height: 1.2;
+  margin-bottom: var(--space-tight);
+}
+
+.srow-line {
+  color: var(--chalk-dim);
+  max-width: 60ch;
+}
+
+.srow-co {
+  color: var(--board-amber);
+}
+
+/* ── Profile ──────────────────────────────────────────────── */
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-loose);
+}
+
+@media (min-width: 860px) {
+  .profile-grid {
+    grid-template-columns: 1.4fr 1fr;
+    gap: clamp(48px, 6vw, 96px);
+  }
+}
+
+.profile-prose > * + * {
+  margin-top: var(--space-base);
+}
+
+.profile-prose p {
+  color: var(--ink-soft);
+}
+
+.offpitch {
+  border-top: 2px solid var(--ink);
+  padding-top: var(--space-base);
+}
+
+.offpitch ul {
+  list-style: none;
+  margin-top: var(--space-base);
+}
+
+.offpitch li {
+  font-weight: 600;
+  font-stretch: 88%;
+  font-size: var(--fs-lead);
+  line-height: 1.3;
+  padding-block: var(--space-snug);
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink);
+}
+
+/* ── Contact (board section) ──────────────────────────────── */
+
+.contact {
+  background: var(--board-black);
+  color: var(--chalk);
+  padding-block: var(--space-section);
+}
+
+.contact .t-display {
+  color: var(--board-amber);
+  margin-bottom: var(--space-base);
+}
+
+.contact-line {
+  color: var(--chalk-dim);
+  margin-bottom: var(--space-loose);
+  max-width: 46ch;
+}
+
+.contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-snug);
+  align-items: center;
+}
+
+.contact .btn-ghost {
+  border-color: var(--chalk-dim);
+  color: var(--chalk);
+}
+
+.contact .btn-ghost:hover {
+  background: var(--chalk);
+  color: var(--board-black);
+}
+
+.contact .board {
+  background: transparent;
+  border: 2px solid rgba(255, 176, 32, 0.4);
+  margin-top: var(--space-loose);
+}
+
+.colophon {
+  margin-top: var(--space-section);
+  padding-top: var(--space-base);
+  border-top: 1px solid rgba(244, 246, 241, 0.18);
+  color: var(--chalk-dim);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-base);
+  flex-wrap: wrap;
+}
