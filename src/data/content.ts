@@ -94,12 +94,12 @@ export const season: { current: boolean; en: SeasonCopy; es: SeasonCopy }[] = [
     en: {
       role: 'Software Engineer Intern',
       when: 'Now',
-      line: 'Working as a software engineer intern alongside my final year of study.',
+      line: 'Gaining hands-on experience in agentic software development, teamwork, PostgreSQL, FastAPI, React, Git and Docker.',
     },
     es: {
       role: 'Ingeniero de software en prácticas',
       when: 'Actualmente',
-      line: 'Trabajando como ingeniero de software en prácticas mientras curso mi último año.',
+      line: 'Adquiriendo experiencia práctica en desarrollo de software agéntico, trabajo en equipo, PostgreSQL, FastAPI, React, Git y Docker.',
     },
   },
   {
