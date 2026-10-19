@@ -103,6 +103,19 @@ export const season: { current: boolean; en: SeasonCopy; es: SeasonCopy }[] = [
     },
   },
   {
+    current: true,
+    en: {
+      role: 'Freelance Software Developer',
+      when: 'Now',
+      line: 'Building software projects for clients from start to finish.',
+    },
+    es: {
+      role: 'Desarrollador de software freelance',
+      when: 'Actualmente',
+      line: 'Desarrollando proyectos de software para clientes de principio a fin.',
+    },
+  },
+  {
     current: false,
     en: {
       role: 'Programming Teacher',
@@ -177,7 +190,7 @@ export const ui = {
     seasonSub: 'Where I have been working, most recent first.',
     profileTitle: 'The profile',
     profileLead:
-      'I am Carlos, a final-year Computer Science student in Spain, currently working as a software engineer intern. I like problems that sit at different altitudes — a Flask marketplace one month, a CUDA kernel the next, a U-Net after that.',
+      'I am Carlos, a final-year Computer Science student in Spain, currently working as a software engineer intern. Alongside my internship, I build software projects for freelance clients. I like problems that sit at different altitudes — a Flask marketplace one month, a CUDA kernel the next, a U-Net after that.',
     profileTeach:
       'I also teach programming and robotics to kids aged 8 to 12, which is the fastest way I know to find out whether you actually understand something.',
     offPitch: 'Off the pitch',
@@ -213,7 +226,7 @@ export const ui = {
     seasonSub: 'Dónde he trabajado, de lo más reciente a lo más antiguo.',
     profileTitle: 'El perfil',
     profileLead:
-      'Soy Carlos, estudiante de último curso de Ingeniería Informática en España y actualmente ingeniero de software en prácticas. Me gustan los problemas de distinta naturaleza — un mercado en Flask un mes, un kernel de CUDA al siguiente y una U-Net después.',
+      'Soy Carlos, estudiante de último curso de Ingeniería Informática en España y actualmente ingeniero de software en prácticas. Además de mis prácticas, desarrollo proyectos de software para clientes freelance. Me gustan los problemas de distinta naturaleza — un mercado en Flask un mes, un kernel de CUDA al siguiente y una U-Net después.',
     profileTeach:
       'También enseño programación y robótica a niños de 8 a 12 años, que es la forma más rápida que conozco de descubrir si de verdad entiendes algo.',
     offPitch: 'Fuera del campo',
